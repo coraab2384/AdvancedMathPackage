@@ -1,15 +1,9 @@
 package amp.algebra;
 
 import java.math.BigInteger;
-import javax.lang.model.type.NullType;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Range;
 
 public class MathBigInteger
-        extends IntegralNum {
+        extends IntegerNum {
     /**
      * The actual {@link BigInteger} value
      */

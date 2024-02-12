@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="CheckerFramework" enabled="true">
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar" />
+        </processorPath>
+      </profile>
+      <profile name="JetBrains" enabled="true">
+        <processorPath useClasspath="false">
+          <entry name="$PROJECT_DIR$/../../libraries/JetBrains/annotations 24.0.0/annotations.jar" />
+        </processorPath>
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

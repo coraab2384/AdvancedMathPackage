@@ -1,54 +1,60 @@
 package amp.algebra;
 
 import java.math.BigInteger;
+import java.util.function.IntFunction;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
-public class LongSigned
-        extends SignedPrimitive {
-    /**
-     * The actual {@code long} value
-     */
-    private final long n;
+import static amp.algebra.MathNumbers.Cache.*;
 
+
+public class LongSigned
+        extends SignedPrimitive
+        implements IntFunction<LongSigned> {
+    
     /**
      * Size to be generated on loading
      */
-    private static final int INITIAL_CACHE_SIZE = DEFAULT_INITIAL_CACHE_SIZE;
+    private static final byte INITIAL_CACHE_SIZE = DEFAULT_INITIAL_CACHE_SIZE;
 
     /**
      * Magnitude of the highest positive number in this cache
      */
     private static int CACHE_MAGNITUDE = DEFAULT_CACHE_MAGNITUDE;
-
-    /**
-     * Having no sign, zero is outside the array
-     * It is still eternal, however.
-     */
-    private static LongSigned ZERO = new LongSigned(0);
-
-    /**
-     * The first half of the cache is the value matching the index, which are all positive
-     * The second array is such that the index 0 maps to -1, and so
-     * There is one more cached negative than positive number always
-     * The two values in each array above the cache magnitude index are the
-     * Min and Max possible values, respectively
-     */
-    private static LongSigned[][] CACHE = new LongSigned[2][CACHE_MAGNITUDE + 1];
+    private static IntFunction<LongSigned> access = LongSigned::new;
+    
+    private static final Cache<LongSigned> CACHE;
+    
 
     /*
      * Generate initial cache
      */
     static {
-        CACHE[0][0] = new LongSigned(Long.MAX_VALUE);
-        CACHE[1][0] = new LongSigned(Long.MIN_VALUE);
-        for (int i = 1; i < INITIAL_CACHE_SIZE; i++) {
-            CACHE[0][i] = new LongSigned(i);
-            CACHE[1][i] = new LongSigned(-i);
-        }
+        /**
+         * The 0th element of each cache vector.
+         */
+        final LongSigned[] ZERO_MAX_MIN = {
+                new LongSigned(0),
+                new LongSigned(Long.MAX_VALUE),
+                new LongSigned(Long.MIN_VALUE)
+        };
+        CACHE = new Cache<>(
+                3,
+                INITIAL_CACHE_SIZE,
+                access,
+                ZERO_MAX_MIN,
+                null
+        );
     }
+    
+    
+    /**
+     * The actual {@code long} value
+     */
+    private final long n;
 
     /**
      * This increases the cache magnitude, which
@@ -57,32 +63,16 @@ public class LongSigned
      * @return true if the cache was increased, and false if the existing cache
      *         already exceeds the proposed expansion.
      */
+    
     public static boolean cacheMagnitudeResize(
-            @Range(from = DEFAULT_CACHE_MAGNITUDE, to = Integer.MAX_VALUE) int newMagnitude
+            @Range(from = 1, to = Integer.MAX_VALUE - 1) int newMagnitude
     ) {
-        if (newMagnitude <= CACHE_MAGNITUDE ||
-                newMagnitude == Integer.MAX_VALUE)
+        int posNewMagn = CACHE.cacheResize(newMagnitude, CACHE_MAGNITUDE);
+        if (posNewMagn == -1) {
             return false;
+        }
         //else
-        LongSigned[][] newCache = new LongSigned[2][newMagnitude + 1];
-        // Need to actually copy the old cache in
-        System.arraycopy(
-                CACHE[0],
-                0,
-                newCache[0],
-                0,
-                CACHE.length
-        );
-        System.arraycopy(
-                CACHE[1],
-                0,
-                newCache[1],
-                0,
-                CACHE.length
-        );
-        // Assign
-        CACHE_MAGNITUDE = newMagnitude;
-        CACHE = newCache;
+        CACHE_MAGNITUDE = posNewMagn;
         return true;
     }
 
@@ -102,7 +92,7 @@ public class LongSigned
      * val is assumed to be signed
      * @param val the {@code long}.
      */
-    public LongSigned(
+    private LongSigned(
             long val
     ) {
         n = val;
@@ -114,31 +104,27 @@ public class LongSigned
      * @param val the {@code long} input.
      * @return the {@link LongSigned} constructed from val.
      */
-    @Not
+    @NonNull
     public static LongSigned valueOf(
             long val
     ) {
-        if (val == 0)
-            return ZERO;
-        //else
-        if (val <= CACHE_MAGNITUDE &&
-                val >= -CACHE_MAGNITUDE) {
-            boolean isNegative = val < 0;
-            LongSigned prospect = (isNegative) ?
-                    CACHE[1][ (int)(-val) ] :
-                    CACHE[0][ (int)val ];
-            if (prospect != null)
-                return prospect;
-            //else
-            prospect = new LongSigned(val);
-            if (isNegative)
-                CACHE[1][ (int)(-val) ] = prospect;
-            else
-                CACHE[0][ (int)val ] = prospect;
-            return prospect;
+        if (val == Long.MIN_VALUE) {
+            return CACHE.getMinMaxZero( (byte) 2);
         }
         //else
-        return new LongSigned(val);
+        long magn = Math.abs(val);
+        if (magn < CACHE_MAX) {
+            return (val == 0) ?
+                    CACHE.getMinMaxZero( (byte) 0 ) :
+                    CACHE.queryCalcSet(
+                            (int) val,
+                            access
+                    );
+        }
+        //else
+        return (val == Long.MAX_VALUE) ?
+                CACHE.getMinMaxZero( (byte) 1 ) :
+                new LongSigned(val);
     }
 
     /**
@@ -148,11 +134,10 @@ public class LongSigned
      * @return the {@link LongSigned} constructed from val.
      * @throws ArithmeticException if val is too big
      */
-    @NotNull
+    @NonNull
     public static LongSigned valueOfUnsigned(
-            @Range(from = 0, to = Long.MAX_VALUE) long val
-    )
-            throws ArithmeticException {
+            @Unsigned long val
+    ) throws ArithmeticException {
         if (val < 0)
             throw new ArithmeticException("Input unsigned " +
                     long.class.getCanonicalName() + " value of " +
@@ -169,7 +154,7 @@ public class LongSigned
      * @return the {@link LongSigned} constructed from val.
      * @throws ArithmeticException if val is too big
      */
-    @NotNull
+    @NonNull
     @Contract("null -> fail")
     public static LongSigned valueOf(
             BigInteger val
@@ -191,6 +176,13 @@ public class LongSigned
             newAE.initCause(oldAE);
             throw newAE;
         }
+        catch (NullPointerException oldNPE) {
+            NullPointerException newNPE = new NullPointerException(
+                    "Null value recieved for ".concat(BigInteger.class.getCanonicalName() )
+            );
+            newNPE.initCause(oldNPE);
+            throw newNPE;
+        }
     }
 
     /**
@@ -200,7 +192,7 @@ public class LongSigned
      * @throws ArithmeticException if val is {@code null} or if the
      *                             {@link BigInteger} is too big to fit
      */
-    @NotNull
+    @NonNull
     @Contract("null -> fail")
     public static LongSigned valueOf(
             MathNumbers val
@@ -209,7 +201,7 @@ public class LongSigned
         // Check if already is LongSigned
         if (val instanceof LongSigned)
             // Recast and return
-            return (LongSigned)val;
+            return (LongSigned) val;
         //else
         // Try to turn val to long
         try {
@@ -236,7 +228,7 @@ public class LongSigned
      * @throws NumberFormatException if input is {@code null} or
      *                               otherwise cannot be parsed.
      */
-    @NotNull
+    @NonNull
     @Contract("null -> fail")
     public static LongSigned valueOf(
             String input
@@ -266,7 +258,7 @@ public class LongSigned
      * @throws NumberFormatException if input is {@code null} or
      *                               otherwise cannot be parsed.
      */
-    @NotNull
+    @NonNull
     @Contract("null, _ -> fail")
     public static LongSigned valueOf(
             String input,
@@ -296,14 +288,14 @@ public class LongSigned
      * @param values the array of {@code long} values to convert
      * @return an array of {@link LongSigned}s.
      */
-    @NotNull
-    @Contract("_ -> new")
-    public static LongSigned@NotNull[] valuesOfArray(
-            long@NotNull[] values
+    @NonNull
+    @Contract(pure = true)
+    public static LongSigned@NonNull[] valuesOfArray(
+            long@NonNull[] values
     ) {
         LongSigned[] ansA = new LongSigned[values.length];
         for (int i = 0; i < values.length; i++)
-            ansA[i] = new LongSigned(values[i]);
+            ansA[i] = valueOf(values[i]);
         return ansA;
     }
 
@@ -329,6 +321,7 @@ public class LongSigned
      * Check if the contained {@code long} is negative
      * @return true if it is negative, false otherwise.
      */
+    @Override
     public boolean isNegative() {
         return (n < 0);
     }
@@ -486,7 +479,7 @@ public class LongSigned
     @Contract("_, _ -> new")
     private static WholeNum narrowNexus(
             long val,
-            @NotNull NarrowSettings narrow
+            @NotNull MathObjects.Context.NarrowSettings narrow
     )
             throws ArithmeticException {
         return switch (narrow) {
@@ -557,23 +550,10 @@ public class LongSigned
      */
     @Contract(pure = true)
     public boolean equals(
-            @NotNull LongSigned that
+            @NonNull SignedPrimitive that
     ) {
 
-        return (this.n == that.n);
-    }
-
-    /**
-     * Checks equality against the other {@link MathBigInteger}.
-     * @param that, the value to check for equality against.
-     * @return true if they are equal, false otherwise.
-     */
-    @Contract(pure = true)
-    public boolean equals(
-            @NotNull MathBigInteger that
-    ) {
-        // Use larger type equals
-        return that.equals(this);
+        return (this.n == that.longValue());
     }
 
     /**
@@ -586,7 +566,7 @@ public class LongSigned
      */
     @Contract(pure = true)
     public boolean equals(
-            @NotNull WholeNum that
+            @NonNull WholeNum that
     ) {
         // Get that as long
         long thatLong = that.longValue();
@@ -677,13 +657,12 @@ public class LongSigned
      * @return the {@link WholeNum} with the sum.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
-    @NotNull
-    @Contract(value = "_, _ -> new", pure = true)
+    @NonNull
+    @Contract(pure = true)
     protected WholeNum add(
             long that,
-            @NotNull NarrowSettings narrow
-    )
-            throws ArithmeticException {
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
         // Get the sum, as long
         long ansLong;
         try {
@@ -703,15 +682,23 @@ public class LongSigned
      * @param that the other {@link SignedPrimitive} to add.
      * @return a {@link IntegralNum} with the sum.
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
-    public IntegralNum add(
-            @NotNull SignedPrimitive that
+    @NonNull
+    @Contract(pure = true)
+    public IntegerNum add(
+            @NonNull SignedPrimitive that
     ) {
+        if (this.n == 0) {
+            return that;
+        }
+        //else
         // Get long value of that
-        long thatLong = that.longValue();
+        long thatL = that.longValue();
+        if (thatL == 0) {
+            return this;
+        }
+        //else
         // Set to no narrowing, add, and return
-        return (IntegralNum)( this.add(thatLong, NarrowSettings.NONE) );
+        return (IntegerNum) ( this.add(thatL, NarrowSettings.NONE) );
     }
 
     /**
@@ -723,17 +710,16 @@ public class LongSigned
      * @return the {@link WholeNum} with the sum.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
-    @NotNull
-    @Contract(value = "_, _ -> new", pure = true)
+    @NonNull
+    @Contract(pure = true)
     public WholeNum add(
-            @NotNull SignedPrimitive that,
-            @NotNull NarrowSettings narrow
-    )
-            throws ArithmeticException {
+            @NonNull SignedPrimitive that,
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
         // Get long value of that
-        long thatLong = that.longValue();
+        long thatL = that.longValue();
         // Pass to main add function,
-        return this.add(thatLong, narrow);
+        return this.add(thatL, narrow);
     }
 
     /**
@@ -741,12 +727,12 @@ public class LongSigned
      * @param that the {@link WholeNum} to add.
      * @return a {@link LongSigned} with the sum.
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
-    public IntegralNum add(
-            @NotNull WholeNum that
+    @NonNull
+    @Contract(pure = true)
+    public IntegerNum add(
+            @NonNull WholeNum that
     ) {
-        return (IntegralNum)( this.add(that, NarrowSettings.NONE) );
+        return (IntegerNum) ( this.add(that, NarrowSettings.NONE) );
     }
 
     /**
@@ -758,45 +744,45 @@ public class LongSigned
      * @return the {@link WholeNum} with the sum.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
-    @NotNull
+    @NonNull
     @Contract(value = "_, _ -> new", pure = true)
     public WholeNum add(
-            @NotNull WholeNum that,
-            @NotNull NarrowSettings narrow
-    )
-            throws ArithmeticException {
-        // Check subclass of that to best proceed
-        if (that instanceof MathBigInteger)
-            return ( (MathBigInteger)that ).add(this, narrow);
-        //else
-        if (that instanceof UnsignedPrimitive) {
-            long thatLong = that.longValue();
-            if (that instanceof Long_Unsigned &&
-                    thatLong < 0) {
-                // Determine how much over signed long max that is, but negative
-                long thatOverNeg = Long.MAX_VALUE - thatLong;
-                // If this is a larger value than the negative overshoot value
-                if (n > thatOverNeg) {
+            @NonNull WholeNum that,
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
+        boolean isPossibleLongUnsigned = (that instanceof UnsignedPrimitive);
+        if ( (that instanceof SignedPrimitive) || isPossibleLongUnsigned) {
+            // Get long value of that
+            long thatL = that.longValue();
+            // If this is a larger value than the negative overshoot valu
+            if (isPossibleLongUnsigned) {
+                if (this.n > Long.MAX_VALUE - thatL) {
                     // Then we have to use MathBigIntegers to hold the answer
-                    MathBigInteger thisMBI = MathBigInteger.valueOf(this);
-                    BigInteger thatBI = that.toBigInteger();
-                    return thisMBI.add(thatBI, narrow);
+                    return this.addSafe(that, narrow);
                 }
                 //else
                 // Then the sum fits within signed long
-                long ans = n + thatLong;
-                return narrowNexus(ans, narrow);
+                return narrowNexus(
+                        this.n + thatL,
+                        narrow
+                );
             }
             //else
-            return this.add(thatLong, narrow);
+            return this.add(thatL, narrow);
         }
         //else
-        if (that instanceof BigUnsignedInteger) {
-            MathBigInteger thisMBI = MathBigInteger.valueOf(n);
-            return thisMBI.add(that, narrow);
-        }
-        // If we got here without returning, something is wrong
-        throw new RuntimeException("Cannot identify type of WholeNum");
+        return this.addSafe(that, narrow);
+    }
+    
+    @NonNull
+    @Contract(pure = true)
+    private WholeNum addSafe(
+            @NonNull WholeNum that,
+            @NonNull NarrowSettings narrow
+    ) {
+        BigInteger thatBI = that.toBigInteger();
+        MathBigInteger thisMBI = MathBigInteger.valueOf(this);
+        return thisMBI.add(thatBI, narrow);
     }
 
     /**
@@ -806,10 +792,10 @@ public class LongSigned
      * @return the {@link LongSigned} with the sum.
      * @throws ArithmeticException if the value over or underflows.
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
+    @NonNull
+    @Contract(pure = true)
     public LongSigned addStrict(
-            @NotNull SignedPrimitive that
+            @NonNull SignedPrimitive that
     )
             throws ArithmeticException {
         // Get that long value
@@ -817,7 +803,7 @@ public class LongSigned
         // Get sum
         long ansLong = Math.addExact(this.n, thatLong);
         // Return as LongSigned
-        return new LongSigned(ansLong);
+        return valueOf(ansLong);
     }
 
     /**
@@ -830,17 +816,16 @@ public class LongSigned
      * @return the {@link WholeNum} with the difference.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
-    @NotNull
-    @Contract(value = "_, _ -> new", pure = true)
+    @NonNull
+    @Contract(pure = true)
     protected WholeNum subtract(
             long that,
-            @NotNull NarrowSettings narrow
-    )
-            throws ArithmeticException {
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
         // Get the sum, as long
         long ansLong;
         try {
-            ansLong = Math.subtractExact(n, that);
+            ansLong = Math.subtractExact(this.n, that);
         }
         catch (ArithmeticException ignored) {
             MathBigInteger thisMBI = MathBigInteger.valueOf(this);
@@ -857,15 +842,19 @@ public class LongSigned
      * @param that the other {@link SignedPrimitive} to subtract by.
      * @return a {@link IntegralNum} with the difference.
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
-    public IntegralNum subtract(
-            @NotNull SignedPrimitive that
+    @NonNull
+    @Contract(pure = true)
+    public IntegerNum subract(
+            @NonNull SignedPrimitive that
     ) {
+        if (this.n == 0) {
+            return that;
+        }
+        //else
         // Get long value of that
-        long thatLong = that.longValue();
+        long thatL = that.longValue();
         // Set to no narrowing, add, and return
-        return (IntegralNum)( this.subtract(thatLong, NarrowSettings.NONE) );
+        return (IntegerNum) ( this.subtract(thatL, NarrowSettings.NONE) );
     }
 
     /**
@@ -877,17 +866,16 @@ public class LongSigned
      * @return the {@link WholeNum} subclass with the difference.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
-    @NotNull
-    @Contract(value = "_, _ -> new", pure = true)
+    @NonNull
+    @Contract(pure = true)
     public WholeNum subtract(
-            @NotNull SignedPrimitive that,
-            @NotNull NarrowSettings narrow
-    )
-            throws ArithmeticException {
+            @NonNull SignedPrimitive that,
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
         // Get long value of that
-        long thatLong = that.longValue();
+        long thatL = that.longValue();
         // Pass to main add function,
-        return this.subtract(thatLong, narrow);
+        return this.subtract(thatL, narrow);
     }
 
     /**
@@ -896,13 +884,12 @@ public class LongSigned
      * @param that the {@link WholeNum} to subtract by.
      * @return a {@link IntegralNum} with the difference.
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
-    public IntegralNum subtract(
-            @NotNull WholeNum that
+    @NonNull
+    @Contract(pure = true)
+    public IntegerNum subtract(
+            @NonNull WholeNum that
     ) {
-        // Set NarrowSettings to NONE and use function with narrowing
-        return (IntegralNum)( this.subtract(that, NarrowSettings.NONE) );
+        return (IntegerNum) ( this.subtract(that, NarrowSettings.NONE) );
     }
 
     /**
@@ -914,52 +901,43 @@ public class LongSigned
      * @return the {@link WholeNum} subclass with the difference.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
-    @NotNull
-    @Contract(value = "_, _ -> new", pure = true)
+    @NonNull
+    @Contract(pure = true)
     public WholeNum subtract(
-            @NotNull WholeNum that,
-            @NotNull NarrowSettings narrow
-    )
-            throws ArithmeticException {
-        // Check subclass of that to best proceed
-        if (that instanceof MathBigInteger) {
-            // Use BigIntegers
-            BigInteger thisBI = this.toBigInteger();
-            // a-b = -b + a
-            MathBigInteger thatNeg = ( (MathBigInteger)that ).negate();
-            // Do it from the larger values point of view for narrowing
-            return thatNeg.add(thisBI, narrow);
-        }
-        //else
-        if (that instanceof UnsignedPrimitive) {
-            long thatLong = that.longValue();
-            if (that instanceof Long_Unsigned &&
-                    thatLong < 0) {
-                // Determine how much over signed long max that is, but negative
-                long thatOver = thatLong - Long.MAX_VALUE;
-                // If this is a larger value than the negative overshoot value
-                if (n < thatOver) {
+            @NonNull WholeNum that,
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
+        boolean isPossibleLongUnsigned = (that instanceof UnsignedPrimitive);
+        if ( (that instanceof SignedPrimitive) || isPossibleLongUnsigned) {
+            // Get long value of that
+            long thatL = that.longValue();
+            // If this is a larger value than the negative overshoot value
+            if (isPossibleLongUnsigned) {
+                if (this.n < thatL - Long.MAX_VALUE) {
                     // Then we have to use MathBigIntegers to hold the answer
-                    MathBigInteger thisMBI = MathBigInteger.valueOf(this);
-                    BigInteger thatBI = that.toBigInteger();
-                    return thisMBI.subtract(thatBI, narrow);
+                    return this.subtractSafe(that, narrow);
                 }
-                //else
-                // Then the sum fits within signed long
-                long ans = n - thatLong;
-                return narrowNexus(ans, narrow);
             }
             //else
-            return this.subtract(thatLong, narrow);
+            // Then the sum fits within signed long
+            return narrowNexus(
+                    this.n - thatL,
+                    narrow
+            );
         }
         //else
-        if (that instanceof BigUnsignedInteger) {
-            MathBigInteger thisMBI = MathBigInteger.valueOf(n);
-            BigInteger thatBI = that.toBigInteger();
-            return thisMBI.subtract(thatBI, narrow);
-        }
-        // If we got here without returning, something is wrong
-        throw new RuntimeException("Cannot identify type of WholeNum");
+        return this.subtractSafe(that, narrow);
+    }
+    
+    @NonNull
+    @Contract(pure = true)
+    private WholeNum subtractSafe(
+            @NonNull WholeNum that,
+            @NonNull NarrowSettings narrow
+    ) {
+        BigInteger thatBI = that.toBigInteger();
+        MathBigInteger thisMBI = MathBigInteger.valueOf(that);
+        return thisMBI.subtract(thatBI, narrow);
     }
 
     /**
@@ -969,12 +947,11 @@ public class LongSigned
      * @return the {@link LongSigned} with the difference.
      * @throws ArithmeticException if the value over or underflows.
      */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
+    @NonNull
+    @Contract(pure = true)
     public LongSigned subtractStrict(
-            @NotNull SignedPrimitive that
-    )
-            throws ArithmeticException {
+            @NonNull SignedPrimitive that
+    ) throws ArithmeticException {
         // Get that long value
         long thatLong = that.longValue();
         // Get sum
@@ -993,15 +970,24 @@ public class LongSigned
      * @return the {@link WholeNum} with the product.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
+    @NonNull
+    @Contract(pure = true)
     protected WholeNum multiply(
-            long thatBI,
-            NarrowSettings narrow
-    )
-            throws ArithmeticException {
-        // Get the product, as long
-        long ansBI = (this.n).multiply(thatBI);
-        // Route the product through the narrowNexus
-        return narrowNexus(ansBI, narrow);
+            long that,
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
+        // Get the sum, as long
+        long ansLong;
+        try {
+            ansLong = Math.multiplyExact(this.n, that);
+        }
+        catch (ArithmeticException ignored) {
+            MathBigInteger thisMBI = MathBigInteger.valueOf(this);
+            BigInteger thatBI = BigInteger.valueOf(that);
+            return thisMBI.multiply(thatBI, narrow);
+        }
+        // Route the sum through the narrowNexus
+        return narrowNexus(ansLong, narrow);
     }
 
     /**
@@ -1010,11 +996,23 @@ public class LongSigned
      * @param that the other {@link LongSigned} to multiply by.
      * @return a {@link LongSigned} with the product.
      */
-    public LongSigned multiply(LongSigned that) {
-        // Get the product
-        long ansBI = (this.n).multiply(that.n);
-        // Return a new LongSigned made of the product
-        return new LongSigned(ansBI);
+    @NonNull
+    @Contract(pure = true)
+    public IntegerNum multiply(
+            @NonNull SignedPrimitive that
+    ) {
+        if (this.n == 1) {
+            return that;
+        }
+        //else
+        // Get long value of that
+        long thatL = that.longValue();
+        if (thatL == 1) {
+            return this;
+        }
+        //else
+        // Set to no narrowing, add, and return
+        return (IntegerNum) ( this.multiply(thatL, NarrowSettings.NONE) );
     }
 
     /**
@@ -1026,14 +1024,16 @@ public class LongSigned
      * @return the {@link IntegralNum} subclass with the product.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
+    @NonNull
+    @Contract(pure = true)
     public WholeNum multiply(
-            LongSigned that,
-            NarrowSettings narrow
-    )
-            throws ArithmeticException {
-        // Pass to main multiply function,
-        // but turning that to a long
-        return this.multiply(that.n, narrow);
+            @NonNull SignedPrimitive that,
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
+        // Get long value of that
+        long thatL = that.longValue();
+        // Pass to main add function,
+        return this.multiply(thatL, narrow);
     }
 
     /**
@@ -1042,9 +1042,12 @@ public class LongSigned
      * @param that the {@link WholeNum} to multiply by.
      * @return a {@link LongSigned} with the product.
      */
-    public @NotNull LongSigned multiply(@NotNull WholeNum that) {
-        // Set NarrowSettings to NONE and use function with narrowing
-        return (LongSigned)( this.multiply(that, NarrowSettings.NONE) );
+    @NonNull
+    @Contract(pure = true)
+    public IntegerNum multiply(
+            @NonNull WholeNum that
+    ) {
+        return (IntegerNum) ( this.multiply(that, NarrowSettings.NONE) );
     }
 
     /**
@@ -1056,15 +1059,92 @@ public class LongSigned
      * @return the {@link WholeNum} subclass with the product.
      * @throws ArithmeticException if the value is negative but the unsigned narrowing type is chosen.
      */
-    public @NotNull WholeNum multiply(
-            @NotNull WholeNum that,
-            NarrowSettings narrow
-    )
-            throws ArithmeticException {
-        // Get the long value of that
-        long thatBI = that.tolong();
-        // Pass to main multiply function
-        return this.multiply(thatBI, narrow);
+    @NonNull
+    @Contract(value = "_, _ -> new", pure = true)
+    public WholeNum multiply(
+            @NonNull WholeNum that,
+            @NonNull NarrowSettings narrow
+    ) throws ArithmeticException {
+        boolean isPossibleLongUnsigned = (that instanceof UnsignedPrimitive);
+        if ( (that instanceof SignedPrimitive) || isPossibleLongUnsigned) {
+            // Get long value of that
+            long thatL = that.longValue();
+            if (isPossibleLongUnsigned && (thatL < 0) ) {
+                // Then we have to use MathBigIntegers to hold the answer
+                return this.addSafe(that, narrow);
+            }
+            //else
+            long ansL;
+            try{
+                ansL = Math.multiplyExact(this.n, thatL);
+            }
+            catch (ArithmeticException ignored) {
+                return this.multiplySafe(that, narrow);
+            }
+            //else
+            // Then the sum fits within signed long
+            return narrowNexus(ansL, narrow);
+        }
+        //else
+        return this.multiplySafe(that, narrow);
+    }
+    
+    @NonNull
+    @Contract(pure = true)
+    private WholeNum multiplySafe(
+            @NonNull WholeNum that,
+            @NonNull NarrowSettings narrow
+    ) {
+        BigInteger thatBI = that.toBigInteger();
+        MathBigInteger thisMBI = MathBigInteger.valueOf(that);
+        return thisMBI.multiply(thatBI, narrow);
+    }
+    
+    /**
+     * Add this and another {@link SignedPrimitive},
+     * putting the sum into another {@link LongSigned}.
+     * @param that the other {@link SignedPrimitive} to add.
+     * @return the {@link LongSigned} with the sum.
+     * @throws ArithmeticException if the value over or underflows.
+     */
+    @NonNull
+    @Contract(pure = true)
+    public LongSigned multiplyStrict(
+            @NonNull SignedPrimitive that
+    ) throws ArithmeticException {
+        // Get that long value
+        long thatL = that.longValue();
+        // Get sum
+        long ansLong = Math.multiplyExact(this.n, thatL);
+        // Return as LongSigned
+        return valueOf(ansLong);
+    }
+    @NonNull
+    protected LongSigned@NonNull[] divideAndRemainder(
+            long that
+    ) throws ArithmeticException {
+        // Establish array to hold answer
+        // Initial values for n = 0
+        LongSigned[] ans = {
+                CACHE.getMinMaxZero( (byte) 0 ),
+                CACHE.getMinMaxZero( (byte) 0 )
+        };
+        // Check for cases that result in an input being returned
+        // If dividing by 1
+        if (that == 1) {
+            ans[0] = this;
+        } else if (that == this.n) {
+            ans[0] = valueOf(1);
+        } else if (-that == this.n) {
+            ans[0] = valueOf(-1);
+        } else if (that > this.n) {
+            ans[1] = this;
+        } else if (this.n != 0) {
+            ans[0] = valueOf(this.n / that);
+            ans[1] = valueOf(this.n % that);
+        }
+        // Return as MBIs
+        return ans;
     }
 
     /**
@@ -1076,27 +1156,12 @@ public class LongSigned
      * @return an array of 2 {@link LongSigned}s;
      *              the quotient is first, followed by the remainder.
      */
-    @NotNull
+    @NonNull
     @Contract(pure = true)
-    public LongSigned@NotNull[] quotientAndRemainder(
-            @NotNull LongSigned that
+    public LongSigned@NonNull[] divideAndRemainder(
+            @NonNull SignedPrimitive that
     ) {
-        // Establish array to hold answer
-        LongSigned[] ans = new LongSigned[2];
-        // Get internal values of this and that for checking
-        long thatLong = that.longValue();
-        long thisLong = this.longValue();
-        // Check for cases that result in an input being returned
-        // If dividing by 1
-        if (thatLong == 1) {
-            ans[0] = LongSigned.valueOf(1);
-            ans[1] = LongSigned.valueOf(0);
-        }
-
-        // Do the division
-        long[] ansBIA = (this.n).divideAndRemainder(that.n);
-        // Return as MBIs
-        return valuesOfArray(ansBIA);
+        return this.quotientAndRemainder( that.longValue() );
     }
 
     /**
@@ -1115,14 +1180,20 @@ public class LongSigned
      * @throws ArithmeticException if the answer is negative but set
      *               to be narrowed to unsigned.
      */
-    public WholeNum[] divideAndRemainder(
-            LongSigned that,
-            boolean differentNarrows,
-            NarrowSettings narrow
-    )
-            throws ArithmeticException {
-        // Do the division and return
-        return this.divideAndRemainder(that.n, differentNarrows, narrow);
+    @NonNull
+    @Contract(pure = true)
+    public WholeNum@NonNull[] divideAndRemainder(
+            @NonNull SignedPrimitive that,
+            @NonNull NarrowSettings narrow,
+            boolean differentNarrows
+    ) throws ArithmeticException {
+        return (narrow == NarrowSettings.NONE) ?
+                this.divideAndRemainder(that) :
+                this.divideAndRemainder(
+                        (WholeNum) that,
+                        narrow,
+                        differentNarrows
+                );
     }
 
     /**
@@ -1133,11 +1204,12 @@ public class LongSigned
      * @return an array of 2 {@link LongSigned}s;
      *              the quotient is first, followed by the remainder.
      */
-    public LongSigned @NotNull [] divideAndRemainder(@NotNull WholeNum that) {
-        // Get the LongSigned value of that
-        LongSigned thatMBI = valueOf(that);
-        // Use existing function
-        return this.divideAndRemainder(thatMBI);
+    @NonNull
+    @Contract(pure = true)
+    public LongSigned@NonNull[] divideAndRemainder(
+            @NonNull WholeNum that
+    ) {
+        return (LongSigned[]) ( this.divideAndRemainder(that, NarrowSettings.NONE, false) );
     }
 
     /**
@@ -1156,16 +1228,14 @@ public class LongSigned
      * @throws ArithmeticException if the answer is negative but set
      *               to be narrowed to unsigned.
      */
-    public WholeNum@NotNull[] divideAndRemainder(
-            @NotNull WholeNum that,
-            NarrowSettings narrow,
+    @NonNull
+    @Contract(pure = true)
+    public WholeNum@NonNull[] divideAndRemainder(
+            @NonNull WholeNum that,
+            @NonNull NarrowSettings narrow,
             boolean differentNarrows
-    )
-            throws ArithmeticException {
-        // Get the long value of that
-        long thatBI = that.tolong();
-        // Do the division and return
-        return this.divideAndRemainder(thatBI, differentNarrows, narrow);
+    ) throws ArithmeticException {
+    
     }
 
     /**

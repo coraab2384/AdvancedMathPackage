@@ -2,10 +2,7 @@ package amp.algebra;
 
 import java.math.BigInteger;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
-public abstract class IntegralNum
+public abstract class IntegerNum
         extends WholeNum {
 
     /**

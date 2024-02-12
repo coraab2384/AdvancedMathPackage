@@ -1,0 +1,64 @@
+<component name="libraryTable">
+  <library name="checker">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.base/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.base/unix/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.base/windows/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.compiler/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.datatransfer/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.desktop/macosx/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.desktop/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.desktop/unix/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.desktop/windows/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.instrument/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.logging/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.management/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.naming/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.net.http/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.prefs/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.rmi/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.scripting/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.security.jgss/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.security.sasl/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.smartcardio/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.sql.rowset/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.sql/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.xml.crypto/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/java.xml/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.accessibility/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.accessibility/windows/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.attach/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.charsets/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.compiler/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.crypto.cryptoki/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.dynalink/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.hotspot.agent/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.httpserver/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.internal.jvmstat/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.internal.le/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.internal.opt/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.internal.vm.ci/share/classes/jdk.vm.ci.code/src" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.internal.vm.ci/share/classes/jdk.vm.ci.hotspot/src" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.internal.vm.ci/share/classes/jdk.vm.ci.meta/src" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.javadoc/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.jcmd/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.jconsole/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.jdeps/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.jdi/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.jfr/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.jlink/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.jshell/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.management.agent/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.management/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.naming.dns/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.security.auth/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.unsupported/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/jdk.zipfs/share/classes" />
+      <root url="jar://$PROJECT_DIR$/../../libraries/The Checker Framework/checker-framework-3.42.0/checker/dist/checker.jar!/annotated-jdk/src/utils/IdealGraphVisualizer/Filter/src/main/java" />
+    </SOURCES>
+  </library>
+</component>

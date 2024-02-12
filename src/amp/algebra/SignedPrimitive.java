@@ -2,10 +2,11 @@ package amp.algebra;
 
 import java.math.BigInteger;
 
-import org.jetbrains.annota
-
 public abstract class SignedPrimitive
-        extends IntegralNum {
+        extends IntegerNum {
+    
+    static
+    
     /**
      * Static {@link BigInteger} with largest possible SignedPrimitive
      */

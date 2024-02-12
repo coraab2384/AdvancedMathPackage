@@ -1,11 +1,6 @@
 package amp.algebra;
 
 import java.math.BigInteger;
-import java.math.RoundingMode;
-
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Range;
 
 public abstract class WholeNum
         extends MathNumbers {
@@ -21,13 +16,13 @@ public abstract class WholeNum
      * if used on an operation with a negative number, will give an error
      * Finally, the fifth type will return the smallest type that will hold, signed or unsigned
      */
-    public enum NarrowSettings {
+    /*enum NarrowSettings {
         NONE,
         STRONG,
         UNSIGNED,
         SIGNED,
         SAME_SIGN_TYPE
-    }
+    }*/
 
     /**
      * Returns the smallest signed number type that can contain this value.
@@ -44,7 +39,7 @@ public abstract class WholeNum
             @Range(from = 0, to = Long.MAX_VALUE) long val
     ) {
         // See if val is too big for IntegerUnsigned
-        if (val > IntegerUnsigned.MAX_VALUE)
+        if (val > IntegerUnsigend.MAX_VALUE)
             // Then it is LongSigned
             return new LongSigned(val);
         //else
